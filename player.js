@@ -39,6 +39,47 @@ var Player = function (playlist) {
 };
 Player.prototype = {
   /**
+   * 异步初始化播放器
+   */
+  async init() {
+    try {
+      const playlists = await this.fetchPlaylistsFromServer();
+    } catch (error) {
+      console.error('Error initializing player:', error);
+    }
+  },
+  /**
+   * 更新播放列表
+   * @param {Array} playlists 新的播放列表
+   */
+  updatePlaylists: async function (playlists) {
+    // 假设播放列表的格式和现有的一样，如果格式不同，请根据实际情况进行修改
+    this.playlist = playlists[0].songs;
+
+    // 更新播放列表显示
+    list.innerHTML = '';
+    this.playlist.forEach((song, index) => {
+      var div = document.createElement('div');
+      div.className = 'list-song';
+      div.innerHTML = song.title;
+      div.onclick = () => this.skipTo(index);
+      list.appendChild(div);
+    });
+  },
+
+  /**
+   * 从服务器获取播放列表
+   */
+  fetchPlaylistsFromServer: async function () {
+    try {
+      const playlists = await fetchPlaylistsFromServer(); // 使用你之前的函数获取播放列表
+      await this.updatePlaylists(playlists);
+    } catch (error) {
+      console.error('Error fetching playlists from server:', error);
+    }
+  },
+
+  /**
    * Play a song in the playlist.
    * @param  {Number} index Index of the song in the playlist (leave empty to play the first or current).
    */
@@ -55,7 +96,7 @@ Player.prototype = {
       sound = data.howl;
     } else {
       sound = data.howl = new Howl({
-        src: [data.path + data.file + '.webm', data.path + data.file + '.mp3'],
+        src: ['./audio/' + data.file, './audio/' + data.file],
         html5: true, // Force to HTML5 so that the audio can stream in (best for large files).
         onplay: function () {
           // Display the duration.
@@ -405,7 +446,7 @@ async function fetchPlaylistsFromServer() {
     const playlists = await response.json();
 
     // 更新播放列表
-    console.log(playlists);
+    //console.log(playlists);
     return playlists;
   } catch (error) {
     console.error('Error fetching playlists from server:', error);
@@ -413,7 +454,7 @@ async function fetchPlaylistsFromServer() {
 };
 
 playlistSelector.addEventListener('click', function () {
-  fetchPlaylistsFromServer();
+  player.fetchPlaylistsFromServer();
 });
 
 playlistSelector.addEventListener('change', function () {
@@ -423,6 +464,11 @@ playlistSelector.addEventListener('change', function () {
 
   // 创建 Player 类的实例并传递选择的播放列表
   player.playlist = selectedPlaylist;
+
+  // 手动调用 updatePlaylists 方法来更新播放列表显示
+  player.updatePlaylists([{
+    songs: selectedPlaylist
+  }]);
 });
 
 var move = function (event) {
@@ -475,3 +521,33 @@ var resize = function () {
 };
 window.addEventListener('resize', resize);
 resize();
+
+async function fetchAndPopulatePlaylists() {
+  try {
+    // 发起网络请求获取播放列表
+    const response = await fetch('http://audio.ledoen.tk/api/playlists');
+    const playlists = await response.json();
+
+    // 更新下拉框选项
+    const playlistSelector = document.getElementById('playlistSelector');
+    playlistSelector.innerHTML = ''; // 清空之前的选项
+
+    playlists.forEach((playlist, index) => {
+      const option = document.createElement('option');
+      option.value = `playlist${index + 1}`;
+      option.textContent = `Playlist ${index + 1}`;
+      playlistSelector.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error fetching playlists from server:', error);
+  }
+}
+
+
+// 在页面加载时初始化播放器
+document.addEventListener('DOMContentLoaded', function () {
+  player.init();
+
+  // 获取并填充播放列表
+  fetchAndPopulatePlaylists();
+});

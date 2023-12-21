@@ -328,3 +328,36 @@ body {
   from { opacity: 1; }
   to   { opacity: 0; }
 }
+
+/* styles.css */
+
+#playlistSelector {
+  margin-top:10%;
+  width: 150px;
+  height: 30px;
+  font-size: 20px;
+  color: #fff; /* 设置白色字体 */
+  background-color: transparent; /* 设置深色背景 */
+  border: none; /* 去掉边框 */
+  text-align: center; /* 文字居中对齐 */
+  /* 其他样式属性 */
+}
+
+#playlistSelector:focus {
+  border: none; /* 获得焦点时去掉边框 */
+  /* 其他样式属性 */
+}
+
+#playlistSelector option {
+  background: #bb71f3;
+  margin: 20px;
+  /* 其他样式属性 */
+}
+
+
+label[for="playlistSelector"] {
+  color: #fff; /* 设置白色字体 */
+  font-size: 20px;
+  margin-right: 0px; /* 右边距，调整与下拉框之间的间距 */
+  /* 其他样式属性 */
+}
