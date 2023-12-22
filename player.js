@@ -22,7 +22,8 @@ elms.forEach(function (elm) {
 var Player = function (playlist) {
   this.playlist = playlist;
   this.index = 0;
-
+  this.currentSound = null;
+  
   // Display the title of the first track.
   track.innerHTML = '1. ' + playlist[0].title;
 
@@ -206,7 +207,10 @@ Player.prototype = {
    */
   skipTo: function (index) {
     var self = this;
-
+    if (self.currentSound != null){
+      self.currentSound.stop();
+    }
+    
     // Stop the current track.
     if (self.playlist[self.index].howl) {
       self.playlist[self.index].howl.stop();
