@@ -52,10 +52,10 @@ Player.prototype = {
    * 更新播放列表
    * @param {Array} playlists 新的播放列表
    */
-  updatePlaylists: async function (playlists) {
+  updatePlaylists: async function (playlist) {
     // 假设播放列表的格式和现有的一样，如果格式不同，请根据实际情况进行修改
-    this.playlist = playlists[0].songs;
-
+    this.playlist = playlist;
+    //console.log(this.playlist);
     // 更新播放列表显示
     list.innerHTML = '';
     this.playlist.forEach((song, index) => {
@@ -346,38 +346,6 @@ var player = new Player([
   }
 ]);
 
-// 预定义两个播放列表
-const playlist1 = [
-  {
-    title: 'Rave Digger',
-    file: 'rave_digger',
-    path: './audio/',
-    howl: null
-  },
-  {
-    title: '80s Vibe',
-    file: '80s_vibe',
-    path: './audio/',
-    howl: null
-  }
-];
-
-const playlist2 = [
-  {
-    title: '80s Vibe',
-    file: '80s_vibe',
-    path: './audio/',
-    howl: null
-  },
-  {
-    title: 'Running Out',
-    file: 'running_out',
-    path: './audio/',
-    howl: null
-  }
-];
-
-
 // Bind our player controls.
 playBtn.addEventListener('click', function () {
   player.play();
@@ -425,20 +393,6 @@ volume.addEventListener('touchend', function () {
   window.sliderDown = false;
 });
 
-// 选择播放列表
-function selectPlaylist(playlistName) {
-  // 根据选择的名称获取相应的播放列表数据
-  let selectedPlaylist;
-  if (playlistName === 'playlist1') {
-    selectedPlaylist = playlist1;
-  } else if (playlistName === 'playlist2') {
-    selectedPlaylist = playlist2;
-  }
-
-  // 返回选择的播放列表
-  return selectedPlaylist;
-}
-
 async function fetchPlaylistsFromServer() {
   try {
     // 发起网络请求获取播放列表
@@ -446,29 +400,20 @@ async function fetchPlaylistsFromServer() {
     const playlists = await response.json();
 
     // 更新播放列表
-    //console.log(playlists);
     return playlists;
   } catch (error) {
     console.error('Error fetching playlists from server:', error);
   }
 };
 
-playlistSelector.addEventListener('click', function () {
-  player.fetchPlaylistsFromServer();
-});
-
 playlistSelector.addEventListener('change', function () {
   // 获取所选的播放列表数据
-  const selectedPlaylistName = playlistSelector.value;
-  const selectedPlaylist = selectPlaylist(selectedPlaylistName);
-
+  const selectedPlaylist = JSON.parse(playlistSelector.value);
   // 创建 Player 类的实例并传递选择的播放列表
-  player.playlist = selectedPlaylist;
+  //player.playlist = selectedPlaylist;
 
   // 手动调用 updatePlaylists 方法来更新播放列表显示
-  player.updatePlaylists([{
-    songs: selectedPlaylist
-  }]);
+  player.updatePlaylists(selectedPlaylist);
 });
 
 var move = function (event) {
@@ -534,15 +479,14 @@ async function fetchAndPopulatePlaylists() {
 
     playlists.forEach((playlist, index) => {
       const option = document.createElement('option');
-      option.value = `playlist${index + 1}`;
-      option.textContent = `Playlist ${index + 1}`;
+      option.value = JSON.stringify(playlist.songs);
+      option.textContent = playlist.name;
       playlistSelector.appendChild(option);
     });
   } catch (error) {
     console.error('Error fetching playlists from server:', error);
   }
 }
-
 
 // 在页面加载时初始化播放器
 document.addEventListener('DOMContentLoaded', function () {
